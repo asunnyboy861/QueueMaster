@@ -5,6 +5,7 @@ struct SettingsView: View {
     @Environment(\.colorScheme) var colorScheme
     @State private var showResetConfirmation: Bool = false
     @State private var showClearDataConfirmation: Bool = false
+    @State private var showContactSupport: Bool = false
     
     var body: some View {
         NavigationStack {
@@ -39,6 +40,9 @@ struct SettingsView: View {
                 Button("Cancel", role: .cancel) {}
             } message: {
                 Text("This will permanently delete all your queue history and statistics.")
+            }
+            .sheet(isPresented: $showContactSupport) {
+                ContactSupportView()
             }
         }
     }
@@ -124,11 +128,18 @@ struct SettingsView: View {
                     .foregroundColor(.secondary)
             }
             
-            Link(destination: URL(string: "https://support.apple.com")!) {
+            Button {
+                showContactSupport = true
+            } label: {
+                Label("Contact Support", systemImage: "envelope")
+            }
+            .foregroundColor(.primary)
+            
+            Link(destination: URL(string: "https://queuemaster-support.vercel.app")!) {
                 Label("Help & Support", systemImage: "questionmark.circle")
             }
             
-            Link(destination: URL(string: "https://www.apple.com/legal/privacy/")!) {
+            Link(destination: URL(string: "https://queuemaster-pricacy.vercel.app")!) {
                 Label("Privacy Policy", systemImage: "hand.raised")
             }
         }
