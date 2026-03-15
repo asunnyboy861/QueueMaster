@@ -1,6 +1,5 @@
 import Foundation
 import Combine
-import MusicKit
 
 @MainActor
 class QueueManager: ObservableObject {
@@ -16,6 +15,7 @@ class QueueManager: ObservableObject {
     private var redoStack: [QueueAction] = []
     private let maxHistory: Int = 50
     private var autoSaveTimer: Timer?
+    private let musicService = MusicService.shared
     
     private init() {
         startAutoSave()
@@ -48,6 +48,7 @@ class QueueManager: ObservableObject {
         }
         
         isQueueModified = true
+        syncToMusicService()
     }
     
     func removeFromQueue(_ item: MusicQueueItem) {
@@ -65,6 +66,7 @@ class QueueManager: ObservableObject {
         recordAction(action)
         currentQueue.remove(at: index)
         isQueueModified = true
+        syncToMusicService()
     }
     
     func removeFromQueue(at index: Int) {
@@ -90,6 +92,7 @@ class QueueManager: ObservableObject {
         }
         
         isQueueModified = true
+        syncToMusicService()
     }
     
     func reorderQueue(from source: IndexSet, to destination: Int) {
@@ -107,6 +110,7 @@ class QueueManager: ObservableObject {
         recordAction(action)
         currentQueue.move(fromOffsets: source, toOffset: destination)
         isQueueModified = true
+        syncToMusicService()
     }
     
     func clearQueue() {
@@ -132,6 +136,10 @@ class QueueManager: ObservableObject {
         currentQueue.removeAll()
         currentIndex = 0
         isQueueModified = true
+        
+        Task {
+            try? await musicService.clearQueue()
+        }
     }
     
     func saveQueueSnapshot(source: SnapshotSource = .manual) -> QueueSnapshot {
@@ -160,6 +168,7 @@ class QueueManager: ObservableObject {
         currentQueue = snapshot.items
         currentIndex = snapshot.currentIndex ?? 0
         isQueueModified = true
+        syncToMusicService()
     }
     
     func undoLastAction() {
@@ -190,6 +199,7 @@ class QueueManager: ObservableObject {
         }
         
         isQueueModified = true
+        syncToMusicService()
     }
     
     func redoLastAction() {
@@ -216,6 +226,7 @@ class QueueManager: ObservableObject {
         }
         
         isQueueModified = true
+        syncToMusicService()
     }
     
     var canUndo: Bool {
@@ -232,6 +243,16 @@ class QueueManager: ObservableObject {
             undoStack.removeFirst()
         }
         redoStack.removeAll()
+    }
+    
+    private func syncToMusicService() {
+        Task {
+            do {
+                try await musicService.setQueue(currentQueue)
+            } catch {
+                print("Failed to sync to MusicService: \(error)")
+            }
+        }
     }
     
     private func startAutoSave() {
@@ -270,6 +291,10 @@ class QueueManager: ObservableObject {
     }
     
     func syncWithMusicService() {
-        currentQueue = MusicService.shared.currentQueue
+        Task { @MainActor in
+            musicService.syncWithSystemQueue()
+            currentQueue = musicService.currentQueue
+            currentIndex = 0
+        }
     }
 }

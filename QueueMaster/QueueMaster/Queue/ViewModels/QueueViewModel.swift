@@ -104,14 +104,8 @@ class QueueViewModel: ObservableObject {
     func playItem(_ item: MusicQueueItem) async {
         do {
             try await musicService.play(item: item)
-        } catch let error as MusicError {
-            // Handle known errors with specific messages
-            errorMessage = error.errorDescription
-            showError = true
         } catch {
-            // Handle unknown errors
-            errorMessage = MusicError.from(error).errorDescription
-            showError = true
+            showError(message: "Failed to play: \(error.localizedDescription)")
         }
     }
     

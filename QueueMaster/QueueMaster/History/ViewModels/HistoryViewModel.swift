@@ -7,6 +7,7 @@ class HistoryViewModel: ObservableObject {
     @Published var playStatistics: PlayStatistics = PlayStatistics()
     @Published var isLoading: Bool = false
     @Published var showExportSheet: Bool = false
+    @Published var showImportPicker: Bool = false
     @Published var exportURL: URL?
     @Published var errorMessage: String?
     @Published var showError: Bool = false
@@ -54,6 +55,14 @@ class HistoryViewModel: ObservableObject {
             showExportSheet = true
         } else {
             showError(message: "Failed to export history")
+        }
+    }
+    
+    func importHistory(from url: URL) {
+        if historyManager.importHistory(from: url) {
+            loadHistory()
+        } else {
+            showError(message: "Failed to import history")
         }
     }
     

@@ -49,7 +49,7 @@ struct HistoryView: View {
                 }
                 Button("Cancel", role: .cancel) {}
             } message: {
-                Text("This will permanently delete all queue history and statistics.")
+                Text("This will permanently delete all queue history and statistics. This action cannot be undone.")
             }
             .sheet(isPresented: $viewModel.showExportSheet) {
                 if let url = viewModel.exportURL {
@@ -117,13 +117,31 @@ struct HistoryView: View {
                     .font(.headline)
                 
                 HStack(spacing: AppSpacing.lg) {
-                    StatCard(title: "Queue Edits", value: "\(viewModel.playStatistics.totalQueueEdits)", icon: "pencil.circle")
-                    StatCard(title: "Restores", value: "\(viewModel.playStatistics.totalRestores)", icon: "arrow.counterclockwise.circle")
+                    StatCard(
+                        title: "Queue Edits",
+                        value: "\(viewModel.playStatistics.totalQueueEdits)",
+                        icon: "pencil.circle"
+                    )
+                    
+                    StatCard(
+                        title: "Restores",
+                        value: "\(viewModel.playStatistics.totalRestores)",
+                        icon: "arrow.counterclockwise.circle"
+                    )
                 }
                 
                 HStack(spacing: AppSpacing.lg) {
-                    StatCard(title: "Most Active", value: viewModel.playStatistics.mostEditedTimeOfDay, icon: "clock")
-                    StatCard(title: "Avg Queue", value: "\(viewModel.playStatistics.favoriteQueueLength)", icon: "music.note.list")
+                    StatCard(
+                        title: "Most Active",
+                        value: viewModel.playStatistics.mostEditedTimeOfDay,
+                        icon: "clock"
+                    )
+                    
+                    StatCard(
+                        title: "Avg Queue",
+                        value: "\(viewModel.playStatistics.favoriteQueueLength)",
+                        icon: "music.note.list"
+                    )
                 }
             }
             .listRowBackground(backgroundColor)
@@ -138,6 +156,7 @@ struct SnapshotCardView: View {
     let onRestore: () -> Void
     let onDelete: () -> Void
     
+    @Environment(\.colorScheme) var colorScheme
     @State private var isExpanded: Bool = false
     
     var body: some View {
@@ -161,27 +180,43 @@ struct SnapshotCardView: View {
             }
             
             if isExpanded || snapshot.items.count <= 3 {
-                ForEach(snapshot.items.prefix(5)) { item in
-                    HStack {
-                        Text(item.title)
-                            .font(.caption)
-                            .lineLimit(1)
-                        Spacer()
-                        Text(item.artistName)
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                            .lineLimit(1)
+                VStack(alignment: .leading, spacing: 4) {
+                    ForEach(snapshot.items.prefix(5)) { item in
+                        HStack {
+                            AsyncImage(url: item.artworkURL) { image in
+                                image
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                            } placeholder: {
+                                Rectangle()
+                                    .fill(Color.gray.opacity(0.3))
+                            }
+                            .frame(width: 32, height: 32)
+                            .cornerRadius(4)
+                            
+                            VStack(alignment: .leading) {
+                                Text(item.title)
+                                    .font(.caption)
+                                    .lineLimit(1)
+                                Text(item.artistName)
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                                    .lineLimit(1)
+                            }
+                        }
                     }
-                }
-                
-                if snapshot.items.count > 5 {
-                    Text("+ \(snapshot.items.count - 5) more")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    
+                    if snapshot.items.count > 5 {
+                        Text("+ \(snapshot.items.count - 5) more")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
                 }
             } else if snapshot.items.count > 3 {
                 Button {
-                    withAnimation { isExpanded.toggle() }
+                    withAnimation {
+                        isExpanded.toggle()
+                    }
                 } label: {
                     Text("Show \(snapshot.items.count) songs")
                         .font(.caption)
@@ -190,14 +225,18 @@ struct SnapshotCardView: View {
             }
             
             HStack {
-                Button { onRestore() } label: {
+                Button {
+                    onRestore()
+                } label: {
                     Label("Restore", systemImage: "arrow.counterclockwise")
                         .font(.caption)
                 }
                 .buttonStyle(.borderedProminent)
                 .buttonStyle(.plain)
                 
-                Button(role: .destructive) { onDelete() } label: {
+                Button(role: .destructive) {
+                    onDelete()
+                } label: {
                     Label("Delete", systemImage: "trash")
                         .font(.caption)
                 }

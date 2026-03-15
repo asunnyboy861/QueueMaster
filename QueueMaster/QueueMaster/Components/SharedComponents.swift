@@ -6,19 +6,11 @@ struct QueueItemCard: View {
     let showDragHandle: Bool
     let onTap: () -> Void
     let onDelete: (() -> Void)?
-    var isSelected: Bool = false
     
     @Environment(\.colorScheme) var colorScheme
     
     var body: some View {
         HStack(spacing: AppSpacing.md) {
-            // Selection indicator
-            if isSelected {
-                Image(systemName: "checkmark.circle.fill")
-                    .foregroundColor(.accentColor)
-                    .font(.body)
-            }
-            
             if showDragHandle {
                 Image(systemName: "line.3.horizontal")
                     .foregroundColor(.secondary)
@@ -28,7 +20,8 @@ struct QueueItemCard: View {
             AsyncImage(url: item.artworkURL) { phase in
                 switch phase {
                 case .empty:
-                    Rectangle().fill(Color.gray.opacity(0.3))
+                    Rectangle()
+                        .fill(Color.gray.opacity(0.3))
                 case .success(let image):
                     image
                         .resizable()
@@ -36,9 +29,13 @@ struct QueueItemCard: View {
                 case .failure:
                     Rectangle()
                         .fill(Color.gray.opacity(0.3))
-                        .overlay(Image(systemName: "music.note").foregroundColor(.secondary))
+                        .overlay(
+                            Image(systemName: "music.note")
+                                .foregroundColor(.secondary)
+                        )
                 @unknown default:
-                    Rectangle().fill(Color.gray.opacity(0.3))
+                    Rectangle()
+                        .fill(Color.gray.opacity(0.3))
                 }
             }
             .frame(width: 56, height: 56)
@@ -65,27 +62,30 @@ struct QueueItemCard: View {
                     .font(.caption)
             }
             
-            if item.durationInSeconds > 0 {
-                Text(formatDuration(item.durationInSeconds))
+            if let duration = formatDuration(item.durationInSeconds) {
+                Text(duration)
                     .font(.caption)
                     .foregroundColor(secondaryTextColor)
             }
         }
         .padding(.vertical, AppSpacing.sm)
         .contentShape(Rectangle())
-        .onTapGesture { onTap() }
+        .onTapGesture {
+            onTap()
+        }
         .contextMenu {
-            if isSelected {
-                Button {
-                    onTap()
-                } label: {
-                    Label("Deselect", systemImage: "circle")
-                }
-            }
             if let onDelete = onDelete {
-                Button(role: .destructive) { onDelete() } label: {
+                Button(role: .destructive) {
+                    onDelete()
+                } label: {
                     Label("Remove from Queue", systemImage: "trash")
                 }
+            }
+            
+            Button {
+                // Future: Add to playlist
+            } label: {
+                Label("Add to Playlist", systemImage: "plus.rectangle.on.folder")
             }
         }
     }
@@ -98,7 +98,8 @@ struct QueueItemCard: View {
         colorScheme == .dark ? AppColors.Dark.textSecondary : AppColors.Light.textSecondary
     }
     
-    private func formatDuration(_ seconds: Int) -> String {
+    private func formatDuration(_ seconds: Int) -> String? {
+        guard seconds > 0 else { return nil }
         let minutes = seconds / 60
         let remainingSeconds = seconds % 60
         return String(format: "%d:%02d", minutes, remainingSeconds)
@@ -192,5 +193,31 @@ struct LoadingView: View {
                 .font(.subheadline)
                 .foregroundColor(.secondary)
         }
+    }
+}
+
+struct ErrorView: View {
+    let message: String
+    let retryAction: (() -> Void)?
+    
+    var body: some View {
+        VStack(spacing: AppSpacing.md) {
+            Image(systemName: "exclamationmark.triangle")
+                .font(.system(size: 40))
+                .foregroundColor(.orange)
+            
+            Text(message)
+                .font(.body)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+            
+            if let retryAction = retryAction {
+                Button(action: retryAction) {
+                    Text("Try Again")
+                }
+                .buttonStyle(.borderedProminent)
+            }
+        }
+        .padding()
     }
 }

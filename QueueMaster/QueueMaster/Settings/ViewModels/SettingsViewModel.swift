@@ -56,8 +56,8 @@ class SettingsViewModel: ObservableObject {
     
     init() {
         let savedAutoSaveInterval = UserDefaults.standard.integer(forKey: Keys.autoSaveInterval)
-        self.autoSaveEnabled = UserDefaults.standard.bool(forKey: Keys.autoSave)
         self.autoSaveInterval = savedAutoSaveInterval == 0 ? 30 : savedAutoSaveInterval
+        self.autoSaveEnabled = UserDefaults.standard.bool(forKey: Keys.autoSave)
         self.queueProtectionEnabled = UserDefaults.standard.object(forKey: Keys.queueProtection) as? Bool ?? true
         self.hapticFeedbackEnabled = UserDefaults.standard.object(forKey: Keys.hapticFeedback) as? Bool ?? true
         

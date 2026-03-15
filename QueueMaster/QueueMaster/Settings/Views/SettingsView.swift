@@ -39,7 +39,7 @@ struct SettingsView: View {
                 }
                 Button("Cancel", role: .cancel) {}
             } message: {
-                Text("This will permanently delete all your queue history and statistics.")
+                Text("This will permanently delete all your queue history and statistics. This action cannot be undone.")
             }
             .sheet(isPresented: $showContactSupport) {
                 ContactSupportView()

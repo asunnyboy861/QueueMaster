@@ -1,7 +1,16 @@
 import SwiftUI
-import MusicKit
 
 struct AppColors {
+    static let primary = Color("Primary")
+    static let secondary = Color("Secondary")
+    static let background = Color("Background")
+    static let surface = Color("Surface")
+    static let textPrimary = Color("TextPrimary")
+    static let textSecondary = Color("TextSecondary")
+    static let destructive = Color("Destructive")
+    static let success = Color("Success")
+    static let warning = Color("Warning")
+    
     struct Light {
         static let primary = Color(hex: "007AFF")
         static let secondary = Color(hex: "5856D6")
@@ -24,6 +33,12 @@ struct AppColors {
         static let destructive = Color(hex: "FF453A")
         static let success = Color(hex: "30D158")
         static let warning = Color(hex: "FF9F0A")
+    }
+    
+    static func adaptive(_ light: Color, _ dark: Color) -> Color {
+        return Color(uiColor: UIColor { traitCollection in
+            traitCollection.userInterfaceStyle == .dark ? UIColor(dark) : UIColor(light)
+        })
     }
 }
 
@@ -51,20 +66,4 @@ extension Color {
             opacity: Double(a) / 255
         )
     }
-}
-
-struct AppSpacing {
-    static let xs: CGFloat = 4
-    static let sm: CGFloat = 8
-    static let md: CGFloat = 16
-    static let lg: CGFloat = 24
-    static let xl: CGFloat = 32
-    static let xxl: CGFloat = 48
-}
-
-struct AppCornerRadius {
-    static let small: CGFloat = 4
-    static let medium: CGFloat = 8
-    static let large: CGFloat = 12
-    static let extraLarge: CGFloat = 16
 }

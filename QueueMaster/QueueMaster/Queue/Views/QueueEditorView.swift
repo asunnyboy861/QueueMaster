@@ -1,63 +1,28 @@
 import SwiftUI
+import MusicKit
 
 struct QueueEditorView: View {
     @StateObject private var viewModel = QueueViewModel()
     @Environment(\.colorScheme) var colorScheme
     @State private var isEditing: Bool = false
     @State private var showingClearConfirmation: Bool = false
-    @State private var searchText: String = ""
-    @State private var isSearching: Bool = false
     @State private var selectedItems: Set<String> = []
-    @State private var isSelectionMode: Bool = false
-    
-    // Filtered queue based on search
-    private var filteredQueue: [MusicQueueItem] {
-        if searchText.isEmpty {
-            return viewModel.currentQueue
-        }
-        
-        return viewModel.currentQueue.filter { item in
-            item.title.localizedCaseInsensitiveContains(searchText) ||
-            item.artistName.localizedCaseInsensitiveContains(searchText) ||
-            (item.albumTitle?.localizedCaseInsensitiveContains(searchText) ?? false)
-        }
-    }
-    
-    private var hasSelectedItems: Bool {
-        !selectedItems.isEmpty
-    }
-    
-    // Toggle selection for batch operations
-    private func toggleSelection(for item: MusicQueueItem) {
-        if selectedItems.contains(item.id) {
-            selectedItems.remove(item.id)
-        } else {
-            selectedItems.insert(item.id)
-        }
-    }
-    
-    // Delete all selected items
-    private func deleteSelectedItems() {
-        for itemId in selectedItems {
-            if let index = viewModel.currentQueue.firstIndex(where: { $0.id == itemId }) {
-                viewModel.removeItem(at: index)
-            }
-        }
-        selectedItems.removeAll()
-        isSelectionMode = false
-    }
     
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                // Search field
-                if isSearching {
-                    searchField
-                        .transition(.move(edge: .top).combined(with: .opacity))
-                }
+            ZStack {
+                backgroundColor
+                    .ignoresSafeArea()
                 
-                // Queue list
-                queueList
+                if viewModel.isLoading {
+                    LoadingView(message: "Loading queue...")
+                } else if viewModel.currentQueue.isEmpty {
+                    EmptyQueueView {
+                        viewModel.syncWithAppleMusic()
+                    }
+                } else {
+                    queueList
+                }
             }
             .navigationTitle("Queue")
             .navigationBarTitleDisplayMode(.large)
@@ -87,28 +52,6 @@ struct QueueEditorView: View {
                 
                 ToolbarItem(placement: .topBarTrailing) {
                     HStack(spacing: 16) {
-                        // Batch delete button
-                        if hasSelectedItems {
-                            Button(role: .destructive) {
-                                deleteSelectedItems()
-                            } label: {
-                                Image(systemName: "trash")
-                            }
-                        }
-                        
-                        // Search button
-                        Button {
-                            withAnimation {
-                                isSearching.toggle()
-                                if !isSearching {
-                                    searchText = ""
-                                }
-                            }
-                        } label: {
-                            Image(systemName: "magnifyingglass")
-                        }
-                        
-                        // Sync button
                         Button {
                             viewModel.syncWithAppleMusic()
                         } label: {
@@ -151,27 +94,6 @@ struct QueueEditorView: View {
         }
     }
     
-    // Search field
-    private var searchField: some View {
-        HStack {
-            TextField("Search in queue", text: $searchText)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .autocapitalization(.none)
-                .disableAutocorrection(true)
-            
-            if !searchText.isEmpty {
-                Button {
-                    searchText = ""
-                } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.secondary)
-                }
-            }
-        }
-        .padding(.horizontal, AppSpacing.md)
-        .padding(.vertical, AppSpacing.sm)
-    }
-    
     private var backgroundColor: Color {
         colorScheme == .dark ? AppColors.Dark.background : AppColors.Light.background
     }
@@ -179,17 +101,33 @@ struct QueueEditorView: View {
     private var queueList: some View {
         VStack(spacing: 0) {
             QueueHeaderView(
-                queueCount: filteredQueue.count,
+                queueCount: viewModel.currentQueue.count,
                 totalDuration: viewModel.totalDuration,
                 onClear: {
                     showingClearConfirmation = true
                 },
-                onShuffle: {}
+                onShuffle: {
+                    // Shuffle functionality
+                }
             )
             
             List {
-                ForEach(Array(filteredQueue.enumerated()), id: \.element.id) { index, item in
-                    queueItemRow(for: item, at: index)
+                ForEach(Array(viewModel.currentQueue.enumerated()), id: \.element.id) { index, item in
+                    QueueItemCard(
+                        item: item,
+                        isPlaying: index == viewModel.currentIndex,
+                        showDragHandle: isEditing,
+                        onTap: {
+                            Task {
+                                await viewModel.playItem(at: index)
+                            }
+                        },
+                        onDelete: isEditing ? {
+                            viewModel.removeItem(at: index)
+                        } : nil
+                    )
+                    .listRowBackground(backgroundColor)
+                    .listRowSeparatorTint(.secondary.opacity(0.3))
                 }
                 .onMove { source, destination in
                     viewModel.moveItem(from: source, to: destination)
@@ -211,37 +149,6 @@ struct QueueEditorView: View {
                 onNext: { viewModel.next() },
                 onSeek: { time in viewModel.seek(to: time) }
             )
-        }
-    }
-    
-    @ViewBuilder
-    private func queueItemRow(for item: MusicQueueItem, at index: Int) -> some View {
-        QueueItemCard(
-            item: item,
-            isPlaying: item.id == viewModel.currentItem?.id,
-            showDragHandle: isEditing,
-            onTap: {
-                if isSelectionMode {
-                    toggleSelection(for: item)
-                } else {
-                    Task {
-                        await viewModel.playItem(item)
-                    }
-                }
-            },
-            onDelete: isEditing ? {
-                if let originalIndex = viewModel.currentQueue.firstIndex(where: { $0.id == item.id }) {
-                    viewModel.removeItem(at: originalIndex)
-                }
-            } : nil,
-            isSelected: selectedItems.contains(item.id)
-        )
-        .listRowBackground(backgroundColor)
-        .onLongPressGesture {
-            withAnimation {
-                isSelectionMode = true
-                toggleSelection(for: item)
-            }
         }
     }
     
@@ -284,15 +191,22 @@ struct MiniPlayerView: View {
         HStack(spacing: AppSpacing.md) {
             if let item = currentItem {
                 AsyncImage(url: item.artworkURL) { image in
-                    image.resizable().aspectRatio(contentMode: .fill)
+                    image
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
                 } placeholder: {
                     Rectangle()
                         .fill(Color.gray.opacity(0.3))
-                        .overlay(Image(systemName: "music.note").foregroundColor(.secondary))
+                        .overlay(
+                            Image(systemName: "music.note")
+                                .foregroundColor(.secondary)
+                        )
                 }
                 .frame(width: 48, height: 48)
                 .cornerRadius(6)
-                .onTapGesture { isExpanded = true }
+                .onTapGesture {
+                    isExpanded = true
+                }
                 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(item.title)
@@ -345,11 +259,17 @@ struct MiniPlayerView: View {
                 .padding(.horizontal)
                 
                 AsyncImage(url: item.artworkURL) { image in
-                    image.resizable().aspectRatio(contentMode: .fill)
+                    image
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
                 } placeholder: {
                     Rectangle()
                         .fill(Color.gray.opacity(0.3))
-                        .overlay(Image(systemName: "music.note").font(.system(size: 60)).foregroundColor(.secondary))
+                        .overlay(
+                            Image(systemName: "music.note")
+                                .font(.system(size: 60))
+                                .foregroundColor(.secondary)
+                        )
                 }
                 .frame(width: 250, height: 250)
                 .cornerRadius(AppCornerRadius.large)
@@ -372,7 +292,7 @@ struct MiniPlayerView: View {
                             get: { playbackTime },
                             set: { onSeek($0) }
                         ),
-                        in: 0...Double(max(item.durationInSeconds, 1))
+                        in: 0...Double(item.durationInSeconds)
                     )
                     .tint(.accentColor)
                     
@@ -387,7 +307,9 @@ struct MiniPlayerView: View {
                 .padding(.horizontal)
                 
                 HStack(spacing: AppSpacing.xxl) {
-                    Button {} label: {
+                    Button {
+                        // Previous
+                    } label: {
                         Image(systemName: "backward.fill")
                             .font(.title)
                     }
