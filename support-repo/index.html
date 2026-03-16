@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QueueMaster - Technical Support</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .card p {
+            margin-bottom: 15px;
+            color: #555;
+        }
+
+        .contact-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .contact-box h3 {
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .email-link {
+            color: white;
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-bottom: 2px solid rgba(255,255,255,0.5);
+            padding-bottom: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .email-link:hover {
+            border-bottom-color: white;
+        }
+
+        .faq-item {
+            margin-bottom: 25px;
+            padding-bottom: 25px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .faq-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .faq-item h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .faq-item p {
+            color: #666;
+        }
+
+        .feature-list {
+            list-style: none;
+        }
+
+        .feature-list li {
+            padding: 12px 0;
+            padding-left: 30px;
+            position: relative;
+            color: #555;
+        }
+
+        .feature-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            opacity: 0.8;
+            margin-top: 40px;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .card {
+                padding: 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>QueueMaster Support</h1>
+            <p>We're here to help you get the most out of your music queue management</p>
+        </div>
+
+        <div class="card">
+            <h2>Contact Us</h2>
+            <p>Have a question, issue, or feedback? We'd love to hear from you. Our support team typically responds within 24-48 hours.</p>
+            
+            <div class="contact-box">
+                <h3>Email Support</h3>
+                <a href="mailto:iocompile67692@gmail.com" class="email-link">iocompile67692@gmail.com</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Frequently Asked Questions</h2>
+            
+            <div class="faq-item">
+                <h3>How do I sync my Apple Music queue?</h3>
+                <p>Open QueueMaster and tap the "Sync Queue" button on the main screen. Make sure you have granted the app permission to access your Apple Music library.</p>
+            </div>
+            
+            <div class="faq-item">
+                <h3>Why can't I see my queue?</h3>
+                <p>Ensure that Apple Music is playing and that you have an active Apple Music subscription. The app requires an active subscription to access your queue data.</p>
+            </div>
+            
+            <div class="faq-item">
+                <h3>How does Queue Protection work?</h3>
+                <p>Queue Protection automatically saves your queue at regular intervals. If the app crashes or your device restarts, you can restore your queue from the History tab.</p>
+            </div>
+            
+            <div class="faq-item">
+                <h3>Can I edit my queue directly in the app?</h3>
+                <p>Yes! You can reorder songs by dragging them, remove songs by swiping left, and add songs from your library using the search feature.</p>
+            </div>
+            
+            <div class="faq-item">
+                <h3>Is my data private?</h3>
+                <p>Absolutely. QueueMaster only accesses your music queue data and does not collect or store any personal information. All data is stored locally on your device.</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>App Features</h2>
+            <ul class="feature-list">
+                <li>Sync and manage your Apple Music queue in real-time</li>
+                <li>Drag and drop to reorder songs</li>
+                <li>Queue Protection with automatic saving</li>
+                <li>View queue history and restore previous queues</li>
+                <li>Smart suggestions for queue optimization</li>
+                <li>Dark mode support</li>
+                <li>Haptic feedback for enhanced interaction</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>Troubleshooting</h2>
+            <p><strong>App not syncing?</strong> Try force-closing and reopening the app, or restart your device.</p>
+            <p><strong>Music not playing?</strong> Check that Apple Music is installed and you have an active subscription.</p>
+            <p><strong>Performance issues?</strong> Ensure your device is running the latest iOS version and has sufficient storage space.</p>
+        </div>
+
+        <div class="footer">
+            <p>&copy; 2024 QueueMaster. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>
